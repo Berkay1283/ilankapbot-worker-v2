@@ -1,22 +1,31 @@
 name: Sahibinden Bot Cron
+
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Her 5 dakikada çalışır
-  workflow_dispatch:  # Manuel test için
+    - cron: '*/10 * * * *'  # her 10 dakikada bir
+  workflow_dispatch:
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci
-      - run: npm install playwright
-      - run: npx playwright install --with-deps
-      - name: Run Bot
-        run: node index.js
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node index.js
