@@ -2,26 +2,42 @@ name: Sahibinden Bot Cron
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # her 10 dakikada bir
-  workflow_dispatch:
+    - cron: '*/10 * * * *'  # Her 10 dakikada bir çalışır (ücretsiz limit için ideal)
+  workflow_dispatch:  # Manuel test için
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25  # 25 dakika timeout, Playwright indirme için
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20'  # 2025'te stabil versiyon
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts  # --ignore-scripts ile postinstall hatası önle
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright
         run: npx playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0  # Zorla indir
 
       - name: Run bot
         env:
