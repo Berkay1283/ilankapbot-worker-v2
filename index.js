@@ -11,7 +11,7 @@ const CHECK_INTERVAL_MS = 10000; // 10 seconds
 
 async function processFilter(filter) {
   try {
-    console.log(`Processing filter ID ${filter.id} for user ${filter.telegram_id}`);
+    console.log(`Processing filter ID ${filter.id} for user ${filter.telegram_id || 'BİLİNMEYEN'}`);
     
     // 1. Scrape ads
     const ads = await scrapeSahibinden(filter.url);
