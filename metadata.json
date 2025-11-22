@@ -1,0 +1,5 @@
+{
+  "name": "sahibinden-bot",
+  "description": "Sahibinden.com scraper bot using Playwright and Supabase for Telegram notifications.",
+  "requestFramePermissions": []
+}
