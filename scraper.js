@@ -38,32 +38,29 @@ await Promise.race([
     }
 
     // Evaluate the page content to extract listings
-    const ads = await page.$$eval('tr.searchResultsItem', (rows) => {
-      return rows.map(row => {
-        try {
-          const id = row.getAttribute('data-id');
-          if (!id) return null; // Skip native ads or headers
+const ads = await page.$$eval('tr[data-id]', (rows) => {
+  return rows.map(row => {
+    try {
+      const id = row.getAttribute('data-id');
+      if (!id) return null;
+      const titleEl = row.querySelector('a.classifiedTitle') || row.querySelector('.classifiedTitle');
+      const priceEl = row.querySelector('.searchResultsPriceValue');
+      const linkEl = row.querySelector('a.classifiedTitle');
+      const imgEl = row.querySelector('img');
+      const image = imgEl?.src || imgEl?.getAttribute('data-src') || imgEl?.getAttribute('data-lazy') || null;
 
-          const titleEl = row.querySelector('.classifiedTitle');
-          const priceEl = row.querySelector('.searchResultsPriceValue');
-          const imgEl = row.querySelector('img');
-          const linkEl = row.querySelector('a.classifiedTitle');
-
-          // Sahibinden lazy loads images, sometimes source is in data-source
-          const image = imgEl ? (imgEl.getAttribute('data-source') || imgEl.src) : null;
-          
-          return {
-            id: id,
-            title: titleEl ? titleEl.innerText.trim() : 'No Title',
-            price: priceEl ? priceEl.innerText.trim() : 'No Price',
-            link: linkEl ? linkEl.href : '',
-            image: image
-          };
-        } catch (err) {
-          return null;
-        }
-      }).filter(item => item !== null);
-    });
+      return {
+        id,
+        title: titleEl?.innerText.trim() || 'Başlıksız',
+        price: priceEl?.innerText.trim() || 'Fiyat Yok',
+        link: linkEl?.href || '',
+        image
+      };
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+});
 
     console.log(`Found ${ads.length} ads.`);
     return ads;
