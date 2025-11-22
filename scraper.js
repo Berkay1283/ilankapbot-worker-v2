@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
  * @returns {Promise<Array<{id: string, title: string, price: string, link: string, image: string}>>}
  */
 export async function scrapeSahibinden(url) {
-  console.log(`Starting scrape for: ${url}`);
+  console.log(`Starting scrape for: ${url || 'URL YOK!'}`);
   
   const browser = await chromium.launch({
     headless: true,
