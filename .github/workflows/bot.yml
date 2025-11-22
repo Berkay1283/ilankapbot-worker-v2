@@ -2,42 +2,46 @@ name: Sahibinden Bot Cron
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Her 10 dakikada bir çalışır (ücretsiz limit için ideal)
-  workflow_dispatch:  # Manuel test için
+    - cron: '*/10 * * * *'  # Her 10 dakikada bir çalışır
+  workflow_dispatch:  # Manuel tetikleme için
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 25  # 25 dakika timeout, Playwright indirme için
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # 2025'te stabil versiyon
+          node-version: '20'
 
+      # Cache adımlarını basitleştirdim, lock dosyası yoksa hata vermesin diye key'i değiştirdim
       - name: Cache node modules
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts  # --ignore-scripts ile postinstall hatası önle
+        # HATA ÇÖZÜMÜ BURADA: 'npm ci' yerine 'npm install' kullanıyoruz.
+        # Bu komut lock dosyası yoksa bile çalışır ve package.json'a bakar.
+        run: npm install
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-playwright
 
       - name: Install Playwright
+        # Playwright browser'larını indiriyoruz
         run: npx playwright install --with-deps chromium
         env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0  # Zorla indir
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
 
       - name: Run bot
         env:
