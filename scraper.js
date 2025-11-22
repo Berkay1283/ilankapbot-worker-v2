@@ -26,7 +26,12 @@ export async function scrapeSahibinden(url) {
 
     // Wait specifically for the results list or standard list
     try {
-      await page.waitForSelector('.searchResultsRowClassifiedId', { timeout: 15000 });
+      // 2025 Kasım itibariyle çalışan 3 farklı selector (biri kesin tutar)
+await Promise.race([
+  page.waitForSelector('table#searchResultsTable tr[data-id]', { timeout: 15000 }),
+  page.waitForSelector('tr.searchResultsItem[data-id]', { timeout: 15000 }),
+  page.waitForSelector('a.classifiedTitle', { timeout: 15000 })
+]).catch(() => console.log('Hiçbir selector bulunamadı, captcha veya yeni layout olabilir'));
     } catch (e) {
       console.log('List selector not found, checking for captcha or empty results...');
       // If we hit a captcha or empty page, we might need to handle it or just return empty
